@@ -1,0 +1,9 @@
+{
+    "uuid": "lock-keys-osd@n07ftw.github.com",
+    "name": "Lock Keys OSD Indicator",
+    "description": "Show NumLock, CapsLock & ScrollLock OSD (Like volume)",
+    "shell-version": ["3.18", "3.20", "3.22", "3.24"],
+    "settings-schema": "org.gnome.shell.extensions.lockkeysosd",
+    "url": "https://github.com/n07ftw/gnome-shell-extension-LockKeysOSD",
+    "version": 1
+}

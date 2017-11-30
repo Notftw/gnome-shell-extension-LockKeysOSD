@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist gettext-domain="gnome-shell-extension-lockkeysosd">
+    <schema path="/org/gnome/shell/extensions/lockkeysosd/" id="org.gnome.shell.extensions.lockkeysosd">
+        <key name="num-on-icon" type="s">
+            <default>'num-lock-on'</default>
+            <summary>Numlock icon when turned on</summary>
+        </key>
+        <key name="num-off-icon" type="s">
+            <default>'num-lock-off'</default>
+            <summary>Numlock icon when turned off</summary>
+        </key>
+        
+        <key name="caps-on-icon" type="s">
+            <default>'caps-lock-on'</default>
+            <summary>Capslock icon when turned on</summary>
+        </key>
+        <key name="caps-off-icon" type="s">
+            <default>'caps-lock-off'</default>
+            <summary>Capslock icon when turned off</summary>
+        </key>
+        
+        <key name="scroll-on-icon" type="s">
+            <default>'scroll-lock-on'</default>
+            <summary>Scrolllock icon when turned on</summary>
+        </key>
+        <key name="scroll-off-icon" type="s">
+            <default>'scroll-lock-off'</default>
+            <summary>Scrolllock icon when turned off</summary>
+        </key>
+        <key name="num-on-label" type="s">
+            <default>'Num Lock turned on'</default>
+            <summary>Numlock OSD's text when turned on</summary>
+        </key>
+        <key name="num-off-label" type="s">
+            <default>'Num Lock turned off'</default>
+            <summary>Numlock icon when turned off</summary>
+        </key>
+        
+        <key name="caps-on-label" type="s">
+            <default>'Caps Lock turned on'</default>
+            <summary>Capslock OSD's text when turned on</summary>
+        </key>
+        <key name="caps-off-label" type="s">
+            <default>'Caps Lock turned off'</default>
+            <summary>Capslock icon when turned off</summary>
+        </key>
+        
+        <key name="scroll-on-label" type="s">
+            <default>'Scroll Lock turned on'</default>
+            <summary>Scrolllock OSD's text when turned on</summary>
+        </key>
+        <key name="scroll-off-label" type="s">
+            <default>'Scroll Lock turned off'</default>
+            <summary>Scrolllock icon when turned off</summary>
+        </key>
+    </schema>
+</schemalist>
