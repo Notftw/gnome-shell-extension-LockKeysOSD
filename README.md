@@ -3,6 +3,12 @@
 Shows <kbd>CapsLock</kbd> and <kbd>NumLock</kbd> as popups.
 Looks like the volume and brightness popup.
 
+If your icon theme doesn't have a caps/num/scroll lock icon:
+In settings, you can use either a GTK Icon name, or a file name
+
+Screenshot with Papirus Icon theme and Adwaita Shell theme.
+[screenshot.png](screenshot.png)
+
 Tested on US keyboard.
 Tested on Gnome Shell 3.26. May work for others.
 
