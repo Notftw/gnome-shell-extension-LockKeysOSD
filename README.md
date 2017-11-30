@@ -1,6 +1,6 @@
 # gnome-shell-extension-LockKeysOSD
 
-Shows <kbd>CapsLock</kbd> and <kbd>NumLock</kbd> as popups.
+Shows <kbd>CapsLock</kbd>, <kbd>ScrollLock</kbd> and <kbd>NumLock</kbd> as popups.
 Looks like the volume and brightness popup.
 
 If your icon theme doesn't have a caps/num/scroll lock icon:
