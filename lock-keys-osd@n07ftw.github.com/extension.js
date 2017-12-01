@@ -89,26 +89,16 @@ var OsdKeepWindow = Lang.Class({
             this.setLevel();
         
         
-        this._hideTimeoutId = osdWindow._hideTimeoutId
-        
-        //If the old one is shown:
-        if(osdWindow._hideTimeoutId) {
-            //Disale old window's timer:
-            Mainloop.source_remove(osdWindow._hideTimeoutId);
-            this._hideTimeoutId = 0;
-            
-            //And enable our window, for a time.:
-            this._setTimer(false);
-        }
-        //Hides the old window instantly:
-        osdWindow._reset();
+        this._hideTimeoutId = 0;
+        //We just let the old one finish on its own
+        //to not extend its timing or stop it quicker.
     },
     
     //Reverse of from: Copies THIS OSD to the given one,
     //Hiding this and showing that.
     handoff_to:function(osdWindow) {
         global.log("[lock-keys-osd] Copying "
-            +(this._hideTimeoutId?"shown":"hidden")+" to new " + this._monitorIndex);
+            +(this.staying||(this._hideTimeoutId!=0)?"shown":"hidden")+" to old " + this._monitorIndex);
         
         //Copy properties from widget:
         osdWindow.setLabel(this._label.text);
@@ -118,29 +108,14 @@ var OsdKeepWindow = Lang.Class({
         else
             osdWindow.setLevel();
         
+        osdWindow.hideTimeoutId = 0;
         
-        osdWindow.hideTimeoutId = this.hideTimeoutId;
+        //Staying and not planning to leave:
+        if(this.staying) {
+            global.log("[lock-keys-osd] Cancelling staying osd");
+            this.cancel();
+        }
         
-        //If this old one is shown:
-        if(osdWindow._hideTimeoutId)
-            Mainloop.source_remove(osdWindow._hideTimeoutId);
-        
-        if(osdWindow._hideTimeoutId || this.staying) {
-            //Disable this old one's timer (if it has one)
-            if(osdWindow._hideTimeoutId)
-                Mainloop.source_remove(this._hideTimeoutId);
-            
-            this._hideTimeoutId = 0;
-            
-            this.staying = false;
-            
-            //Show the new one:
-            //BUT we need a new timeout
-            //setTimer will set timer on osdWindow
-            this._setTimer.call(osdWindow, false);
-        } 
-        //Hides this old one instantly:
-        this._reset();
     },
     
     show: function(stay) {
@@ -175,6 +150,7 @@ var OsdKeepWindow = Lang.Class({
         global.log("[lock-keys-osd] setting timeout timer on " 
             + this.constructor.name + ", " + this._monitorIndex + ", stay: " + stay);
         
+        this.staying = stay;
         
         if (this._hideTimeoutId)
             Mainloop.source_remove(this._hideTimeoutId);
@@ -194,8 +170,9 @@ var OsdKeepWindow = Lang.Class({
         if (this._hideTimeoutId) {
             Mainloop.source_remove(this._hideTimeoutId);
             this._hide();
-        } else if(this.staying)
+        } else if(this.staying) {
             this._hide();
+        }
         //else, it's not currently shown, and we don't want to show a hide animation.
     },
 
@@ -252,7 +229,6 @@ function setActive(enable){
             //Copy properties:
             Main.osdWindowManager._osdWindows[i].handoff_from(oldOsdWindows[i]);
             
-            log(Main.osdWindowManager._osdWindows[i]);
         }
         
         update();
