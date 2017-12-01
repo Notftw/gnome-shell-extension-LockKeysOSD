@@ -278,7 +278,7 @@ function update() {
         let label = setting.get_string('caps-'+setting_mode+'-label');
         
         global.log("[lock-keys-osd] Showing Caps");
-        Main.osdWindowManager.show(-1, ico, label, null, newCapStatus);
+        Main.osdWindowManager.show(-1, ico, label, null, newCapStatus && setting.get_boolean('caps-keep'));
         
     } else
     if(numStatus != newNumStatus) {
@@ -288,7 +288,7 @@ function update() {
         let label = setting.get_string('num-'+setting_mode+'-label');
         
         global.log("[lock-keys-osd] Showing Num");
-        Main.osdWindowManager.show(-1, ico, label, null, newNumStatus);
+        Main.osdWindowManager.show(-1, ico, label, null, newNumStatus && setting.get_boolean('num-keep'));
         
     } else
     if(scrollStatus != newScrollStatus) {
@@ -298,7 +298,7 @@ function update() {
         let label = setting.get_string('scroll-'+setting_mode+'-label');
         
         global.log("[lock-keys-osd] Showing Scroll");
-        Main.osdWindowManager.show(-1, ico, label, null, newScrollStatus);
+        Main.osdWindowManager.show(-1, ico, label, null, newScrollStatus && setting.get_boolean('scroll-keep'));
         
     }
     
