@@ -84,6 +84,19 @@ const KeysPrefsWidget = new GObject.Class({
                 Box.add(Widget);
                 this.add(Box);
             }
+            
+            let KeepBox = new Gtk.Box({orientation:Gtk.Orientation.HORIZONTAL, margin:10});
+            let KeepLabel = new Gtk.Label({label:_("Keep "+key.label+" showing when on"), xalign:0});
+            
+            let KeepSwitch = new Gtk.Switch();
+            KeepSwitch.connect("state-set", function(KeepSwitch, state) {
+                setting.set_boolean(key.setting + '-keep', state);
+            });
+            KeepSwitch.state = setting.get_boolean(key.setting+'-keep');
+            
+            KeepBox.pack_start(KeepLabel, true, true, 0);
+            KeepBox.add(KeepSwitch);
+            this.add(KeepBox);
         }
     },
 });

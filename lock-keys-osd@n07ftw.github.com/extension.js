@@ -149,6 +149,7 @@ var OsdKeepWindow = Lang.Class({
         if (!this._icon.gicon)
             return;
 
+        //Fade-In animation:
         if (!this.actor.visible) {
             Meta.disable_unredirect_for_screen(global.screen);
             this.actor.opacity = 0;
@@ -160,10 +161,17 @@ var OsdKeepWindow = Lang.Class({
                                transition: 'easeOutQuad' });
            
         }
-       this._setTimer(stay);
+        //Does the timing (for when to fade-out, or stay):
+        //Also sets the actor to visible
+        this._setTimer(stay);
     },
     //Does the timing stuff, if !this._stay 
+    //Also sets the actor to visible
     _setTimer:function(stay) {
+        //This comes from the parent's show(),
+        //but doesn't have an animation (so it can be used for handoff_from/to)
+        //And it doesn't set the timer based on stay: The main thing this whole thing is for.
+        
         global.log("[lock-keys-osd] setting timeout timer on " 
             + this.constructor.name + ", " + this._monitorIndex + ", stay: " + stay);
         
@@ -176,19 +184,24 @@ var OsdKeepWindow = Lang.Class({
                                                        Lang.bind(this, this._hide));
             GLib.Source.set_name_by_id(this._hideTimeoutId, '[gnome-shell] this._hide');
         }
+        
         this.actor.show();
-        this.actor.opacity = 255;
     },
     
     cancel: function() {
+        //Added if this.staying, ._hide, otherwise the same logic.
         global.log("[lock-keys-osd] cancelling " + this._monitorIndex);
-        if (this._hideTimeoutId)
+        if (this._hideTimeoutId) {
             Mainloop.source_remove(this._hideTimeoutId);
-            
-        this._hide();
+            this._hide();
+        } else if(this.staying)
+            this._hide();
+        //else, it's not currently shown, and we don't want to show a hide animation.
     },
 
     _hide: function() {
+        //Added this.staying, otherwise the same
+        
         global.log("[lock-keys-osd] hiding " + this._monitorIndex);
         this._hideTimeoutId = 0;
         Tweener.addTween(this.actor,
