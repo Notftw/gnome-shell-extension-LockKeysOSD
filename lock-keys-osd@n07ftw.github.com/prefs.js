@@ -148,9 +148,30 @@ function CreateIconSettingWidgetResetter(setting_name) {
 const NewPrefsWidget = new GObject.Class({
     Name:'LockKeysOSD.Prefs.Widget',
     GTypeName:'NewPrefsWidget',
-    Extends:Gtk.Notebook,
+    Extends:Gtk.Box,
     _init:function(params) {
         this.parent(params);
+        
+        this.orientation = Gtk.Orientation.VERTICAL;
+        this.borderWidth = 20;
+        this.spacing = 12; //TODO: Eliminate extra space above stack
+        
+        this.marginLeft = 40;
+        this.marginRight = 40;
+        
+        let SwitcherBox = new Gtk.Box({orientation:Gtk.Orientation.HORIZONTAL});
+        this.add(SwitcherBox);
+        
+        let Switcher = new Gtk.StackSwitcher();
+        SwitcherBox.pack_start(Switcher, true, false, 0);
+        Switcher.halign = Gtk.Align.CENTER;
+        
+        let stack = new Gtk.Stack();
+        this.add(stack);
+        Switcher.set_stack(stack);
+        
+        stack.set_transition_duration(300);
+        stack.set_transition_type(Gtk.StackTransitionType.SLIDE_LEFT_RIGHT);
         
         let lockers = 
         [
@@ -224,13 +245,13 @@ const NewPrefsWidget = new GObject.Class({
             //Indented according to GUI's nesting:
             
             let outBox = new Gtk.Box({orientation: Gtk.Orientation.VERTICAL});
-            this.add(outBox);
-            outBox.borderWidth = 50;
+            stack.add_titled(outBox, key.setting, key.label);
             
-            this.set_tab_label_text(outBox, key.label);4
+            //this.set_tab_label_text(outBox, key.label);4
                 
                 let frame = new Gtk.Frame();
                 outBox.pack_start(frame, true, false, 10);
+                frame.set_label(null);
                     
                     let listBox = new Gtk.ListBox();
                     frame.add(listBox);
@@ -295,7 +316,7 @@ const NewPrefsWidget = new GObject.Class({
         }
         
         let ResetAll = new Gtk.Button();
-        this.set_action_widget(ResetAll, Gtk.PackType.END);
+        SwitcherBox.pack_end(ResetAll, false, false, 0);
         ResetAll.label = "Reset All Keys";
         ResetAll.get_style_context().add_class("destructive-action");
         ResetAll.connect('clicked', function() {
