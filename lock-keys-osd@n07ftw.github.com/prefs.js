@@ -199,25 +199,29 @@ const NewPrefsWidget = new GObject.Class({
                     label:"Text turning OFF",
                     desc:"What text to show on OSD when key is locked",
                     make_widget:CreateTextSettingWidgetCreator(key.setting + '-on-label'),
-                    resetter:CreateTextSettingWidgetResetter(key.setting + '-on-label')
+                    resetter:CreateTextSettingWidgetResetter(key.setting + '-on-label'),
+                    set_width:true,
                 },
                 {
                     label:"Text turning ON",
                     desc:"What text to show on OSD when key is unlocked",
                     make_widget:CreateTextSettingWidgetCreator(key.setting + '-off-label'),
                     resetter:CreateTextSettingWidgetResetter(key.setting + '-off-label'),
+                    set_width:true,
                 },
                 {
                     label:"Icon turning ON",
                     desc:"Icon name/file to show on OSD when key is locked",
                     make_widget:CreateIconSettingWidgetCreator(key.setting + '-on-icon'),
-                    resetter:CreateIconSettingWidgetResetter(key.setting + '-on-icon')
+                    resetter:CreateIconSettingWidgetResetter(key.setting + '-on-icon'),
+                    set_width:true,
                 },
                 {
                     label:"Icon turning OFF",
                     desc:"Icon name/file to show on OSD when key is unlocked",
                     make_widget:CreateIconSettingWidgetCreator(key.setting + '-off-icon'),
-                    resetter:CreateIconSettingWidgetResetter(key.setting + '-off-icon')
+                    resetter:CreateIconSettingWidgetResetter(key.setting + '-off-icon'),
+                    set_width:true,
                 },
                 {
                     label:"Keep on-screen",
@@ -226,6 +230,7 @@ const NewPrefsWidget = new GObject.Class({
                         let KeepSwitch = new Gtk.Switch();
                         
                         KeepSwitch.state = setting.get_boolean(key.setting + '-keep');
+                        KeepSwitch.valign = Gtk.Align.CENTER;
                         
                         KeepSwitch.connect("state-set", function(KeepSwitch, state) {
                             setting.set_boolean(key.setting + '-keep', state);
@@ -235,7 +240,8 @@ const NewPrefsWidget = new GObject.Class({
                     resetter:function(KeepSwitch) {
                         
                         KeepSwitch.state = setting.get_default_value(key.setting + '-keep').deep_unpack();
-                    }
+                    },
+                    set_width:false,
                 }
             ];
             
@@ -290,7 +296,9 @@ const NewPrefsWidget = new GObject.Class({
                                 
                                 let TextWidget = row.make_widget();
                                 TextRow.pack_end(TextWidget, false, false, 0);
-                                TextWidget.width_request = Row_Widget_Width_Request;
+                                TextWidget.halign = Gtk.Align.CENTER;
+                                if(row.set_width)
+                                    TextWidget.width_request = Row_Widget_Width_Request;
                                 
                                 let ResetFunc = function() {
                                     row.resetter(TextWidget);
