@@ -134,14 +134,20 @@ function CreateIconSettingWidgetCreator(setting_name) {
 }
 
 function CreateIconSettingWidgetResetter(setting_name) {
-    let is_file = Gio.file_new_for_path(
-            setting.get_default_value(setting_name).deep_unpack()).
+    let def_val = setting.get_default_value(setting_name).deep_unpack();
+    let is_file = Gio.file_new_for_path(def_val).
         query_exists(new Gio.Cancellable());
     
     return function(Widget) {
         Widget.icon_widget_toggle.set_state(is_file);
         
-        Widget.icon_widget_name.text = setting.get_default_value(setting_name).deep_unpack();
+        if(is_file) {
+            global.log("Setting to " + def_val);
+            Widget.icon_widget_file.set_filename(def_val);
+            global.log("Set to " + Widget.icon_widget_file.get_filename());
+        }
+        
+        Widget.icon_widget_name.text = def_val;
     };
 }
 

@@ -193,6 +193,12 @@ var OsdKeepWindow = Lang.Class({
         this.staying = false;
         return GLib.SOURCE_REMOVE;
     },
+
+    setLabel: function(label) {
+        this._label.visible = (label != undefined);
+        if (label != undefined) //Blank labels wouldn't work before
+            this._label.text = label;
+    },
 });
 
 function setActive(enable){
