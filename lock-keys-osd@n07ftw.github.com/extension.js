@@ -38,29 +38,42 @@ var oldOsdWindows = [];
 //Saves the old functions that we replace:
 var oldManagerShow, oldManagerShowOsdWindow, oldManagerMonitorsChanged;
 
+    
+//>=3.30: Adds maxLevel parameter to show()
+let useMaxLevel = null;
+
 //Custom version of js/ui/osdWindow's OsdWindowManager's function show(...):
 //Adds stay parameter.
-function newManagerShow(monitorIndex, icon, label, level, stay) {
+//If <3.30, then maxLevel is where the stay value is
+function newManagerShow(monitorIndex, icon, label, level, maxLevel, stay) {
     if (monitorIndex != -1) {
         for (let i = 0; i < this._osdWindows.length; i++) {
             if (i == monitorIndex)
-                this._showOsdWindow(i, icon, label, level, stay);
+                this._showOsdWindow(i, icon, label, level, maxLevel, stay);
             else
                 this._osdWindows[i].cancel();
         }
     } else {
         for (let i = 0; i < this._osdWindows.length; i++)
-            this._showOsdWindow(i, icon, label, level, stay);
+            this._showOsdWindow(i, icon, label, level, maxLevel, stay);
     }
 }
 
 //Custom version of js/ui/osdWindow's OsdWindowManager's function _showOsdWindow(...):
 //Adds stay parameter.
-function newManagerShowOsdWindow(monitorIndex, icon, label, level, stay) {
+//If <3.30, then maxLevel is where the stay value is
+function newManagerShowOsdWindow(monitorIndex, icon, label, level, maxLevel, stay) {
     this._osdWindows[monitorIndex].setIcon(icon);
     this._osdWindows[monitorIndex].setLabel(label);
     this._osdWindows[monitorIndex].setLevel(level);
-    this._osdWindows[monitorIndex].show(stay); //CUSTOM STAY PARAMETER
+    if(this._osdWindows[monitorIndex].setMaxLevel != null) {
+        //Added in 3.30
+        this._osdWindows[monitorIndex].setMaxLevel(maxLevel)
+        this._osdWindows[monitorIndex].show(stay);
+    } else {
+        //<3.28 fallback
+        this._osdWindows[monitorIndex].show(maxLevel);
+    }
 }
 
 //Custom version of js/ui/osdWindow's OsdWindowManager's function _monitorsChanged(...):
@@ -142,7 +155,10 @@ var OsdKeepWindow = Lang.Class({
 
         //Fade-In animation:
         if (!this.actor.visible) {
-            Meta.disable_unredirect_for_screen(global.screen);
+            if(global.screen) //<3.30
+                Meta.disable_unredirect_for_screen(global.screen);
+            else //>= 3.30
+                Meta.disable_unredirect_for_display(global.display);
             this.actor.opacity = 0;
             this.actor.get_parent().set_child_above_sibling(this.actor, null);
 
@@ -194,7 +210,10 @@ var OsdKeepWindow = Lang.Class({
                            transition: 'easeOutQuad',
                            onComplete: Lang.bind(this, function() {
                               this._reset();
-                              Meta.enable_unredirect_for_screen(global.screen);
+                              if(global.screen) //<3.30
+                                  Meta.enable_unredirect_for_screen(global.screen);
+                              else //>=3.30
+                                  Meta.enable_unredirect_for_display(global.display);
                            })
                          });
         this.staying = false; //only Difference
@@ -218,45 +237,40 @@ function update() {
     let newNumStatus = Keymap.get_num_lock_state();
     let newScrollStatus = Keymap.get_scroll_lock_state();
     
-    if(capStatus != newCapStatus) {
-        let setting_mode = newCapStatus?'on':'off';
-        
-        let ico = Gio.Icon.new_for_string(setting.get_string('caps-'+setting_mode+'-icon'));
-        let label = setting.get_string('caps-'+setting_mode+'-label');
-        
-        global.log("[lock-keys-osd] Showing Caps");
-        Main.osdWindowManager.show(-1, ico, label, null, newCapStatus && setting.get_boolean('caps-keep'));
-        
-    } else
-    if(numStatus != newNumStatus) {
-        let setting_mode = newNumStatus?'on':'off';
-        
-        let ico = Gio.Icon.new_for_string(setting.get_string('num-'+setting_mode+'-icon'));
-        let label = setting.get_string('num-'+setting_mode+'-label');
-        
-        global.log("[lock-keys-osd] Showing Num");
-        Main.osdWindowManager.show(-1, ico, label, null, newNumStatus && setting.get_boolean('num-keep'));
-        
-    } else
-    if(scrollStatus != newScrollStatus) {
-        let setting_mode = newScrollStatus?'on':'off';
-        
-        let ico = Gio.Icon.new_for_string(setting.get_string('scroll-'+setting_mode+'-icon'));
-        let label = setting.get_string('scroll-'+setting_mode+'-label');
-        
-        global.log("[lock-keys-osd] Showing Scroll");
-        Main.osdWindowManager.show(-1, ico, label, null, newScrollStatus && setting.get_boolean('scroll-keep'));
-        
-    }
+    updateKey('caps',   capStatus,    newCapStatus) ||
+    updateKey('num',    numStatus,    newNumStatus) ||
+    updateKey('scroll', scrollStatus, newScrollStatus);
     
     capStatus = newCapStatus;
     numStatus = newNumStatus;
     scrollStatus = newScrollStatus;
 }
 
+/*
+    Shows the given key if it's status has changed.
+    keyname: 'caps', 'num', or 'scroll' (From settings prefix)
+    oldStatus: Old state of the lock key
+    newStatus: new state of the lock key
+*/
+function updateKey(keyname, oldStatus, newStatus) {
+    if(oldStatus != newStatus) {
+        let setting_mode = newStatus?'on':'off';
+        
+        let ico = Gio.Icon.new_for_string(setting.get_string(keyname+'-'+setting_mode+'-icon'));
+        let label = setting.get_string(keyname+'-'+setting_mode+'-label');
+        
+        let stayVal = newStatus && setting.get_boolean(keyname+'-keep');
+        //If not using the maxLevelParam, both args are set to the stay value. (last argument ignored)
+        let maxLevelParam = useMaxLevel? 0 : stayVal; 
+        Main.osdWindowManager.show(-1, ico, label, null, maxLevelParam, stayVal);
+        
+    } else return false;
+}
+
 
 function init(metadata) {
     enabled = false;
+    useMaxLevel = (Main.osdWindowManager.setMaxLevel != null);
     Convenience.initTranslations("lock-keys-osd");
 }
 

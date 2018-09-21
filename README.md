@@ -9,8 +9,7 @@ In settings, you can use either a GTK Icon name, or a file name
 Screenshot with Papirus Icon theme and Adwaita Shell theme.
 ![screenshot.png](screenshot.png)
 
-Tested on US keyboard.
-Tested on Gnome Shell 3.26. May work for others.
+Tested Working on Gnome Shell 3.26, 3.28, 3.30. May work for others.
 
 ## Installation
 
