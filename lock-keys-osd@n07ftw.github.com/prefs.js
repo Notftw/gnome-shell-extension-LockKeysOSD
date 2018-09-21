@@ -48,34 +48,34 @@ function CreateIconWidget() {
     let MainBox = new Gtk.Box({orientation:Gtk.Orientation.VERTICAL});
     MainBox.spacing = 4;
     
-        let ComboBox = new Gtk.Box({orientation:Gtk.Orientation.HORIZONTAL});
-        MainBox.pack_start(ComboBox, false, false, 0);
-        ComboBox.spacing = 8;
-        
-            let SwitchLabel = new Gtk.Label();
-            ComboBox.pack_start(SwitchLabel, false, false, 0);
-            SwitchLabel.get_style_context().add_class("dim-label");
-            SwitchLabel.label = "Custom file";
-            
-            let FileSwitch = new Gtk.Switch();
-            ComboBox.pack_start(FileSwitch, false, false, 0);
-            FileSwitch.connect("state-set", stateSwitcher);
-        
-        let WidgetBox = new Gtk.Box({orientation:Gtk.Orientation.HORIZONTAL});
-        MainBox.pack_end(WidgetBox, false, false, 0);
-            
-            ChooserButton = new Gtk.FileChooserButton({
-                title:"Open an Icon",
-                action:Gtk.FileChooserAction.OPEN
-            });
-            WidgetBox.pack_start(ChooserButton, true, true, 0);
-            let Filter = new Gtk.FileFilter();
-            Filter.set_name("Icon");
-            Filter.add_pixbuf_formats();
-            ChooserButton.add_filter(Filter);
-            
-            NameEntry = new Gtk.Entry();
-            WidgetBox.pack_start(NameEntry, true, true, 0);
+    let ComboBox = new Gtk.Box({orientation:Gtk.Orientation.HORIZONTAL});
+    MainBox.pack_start(ComboBox, false, false, 0);
+    ComboBox.spacing = 8;
+    
+    let SwitchLabel = new Gtk.Label();
+    ComboBox.pack_start(SwitchLabel, false, false, 0);
+    SwitchLabel.get_style_context().add_class("dim-label");
+    SwitchLabel.label = "Custom file";
+    
+    let FileSwitch = new Gtk.Switch();
+    ComboBox.pack_start(FileSwitch, false, false, 0);
+    FileSwitch.connect("state-set", stateSwitcher);
+    
+    let WidgetBox = new Gtk.Box({orientation:Gtk.Orientation.HORIZONTAL});
+    MainBox.pack_end(WidgetBox, false, false, 0);
+    
+    ChooserButton = new Gtk.FileChooserButton({
+        title:"Open an Icon",
+        action:Gtk.FileChooserAction.OPEN
+    });
+    WidgetBox.pack_start(ChooserButton, true, true, 0);
+    let Filter = new Gtk.FileFilter();
+    Filter.set_name("Icon");
+    Filter.add_pixbuf_formats();
+    ChooserButton.add_filter(Filter);
+    
+    NameEntry = new Gtk.Entry();
+    WidgetBox.pack_start(NameEntry, true, true, 0);
     
     stateSwitcher(FileSwitch);
     
@@ -86,7 +86,7 @@ function CreateIconWidget() {
 }
 
 //Returns a function used for NewPrefsWidget rows make_widget.
-//that creates a label that is attached to that setting
+//that creates a text entry that is attached to that setting
 function CreateTextSettingWidgetCreator(setting_name) {
     return function() {
         let TextWidget = new Gtk.Entry();
@@ -101,12 +101,17 @@ function CreateTextSettingWidgetCreator(setting_name) {
     };
 }
 
+//Returns a function used for NewPrefsWidget rows resetter
+//that sets a text widget's value to the setting's default value.
 function CreateTextSettingWidgetResetter(setting_name) {
     return function(TextWidget) {
         TextWidget.text = setting.get_default_value(setting_name).deep_unpack();
     }
 }
 
+//Returns a function used for NewPrefsWidget rows make_widget.
+//that creates a icon widget that is attached to that setting
+//icon widget is defined in CreateIconWidget function
 function CreateIconSettingWidgetCreator(setting_name) {
     function is_file() {
         return Gio.file_new_for_path(setting.get_string(setting_name)).
@@ -133,6 +138,10 @@ function CreateIconSettingWidgetCreator(setting_name) {
     };
 }
 
+
+//Returns a function used for NewPrefsWidget rows resetter
+//that sets a icon widget's value to the setting's default value.
+//icon widget is defined in CreateIconWidget function
 function CreateIconSettingWidgetResetter(setting_name) {
     let def_val = setting.get_default_value(setting_name).deep_unpack();
     let is_file = Gio.file_new_for_path(def_val).
@@ -202,37 +211,40 @@ const NewPrefsWidget = new GObject.Class({
             
             let rows = [
                 {
-                    label:"Text turning OFF",
-                    desc:"What text to show on OSD when key is locked",
+                    label:"
+                {
+                    label:"Lock text",
+                    desc:"Text to show when key is turned ON",
                     make_widget:CreateTextSettingWidgetCreator(key.setting + '-on-label'),
                     resetter:CreateTextSettingWidgetResetter(key.setting + '-on-label'),
                     set_width:true,
                 },
                 {
-                    label:"Text turning ON",
-                    desc:"What text to show on OSD when key is unlocked",
+                    label:"Unlock text",
+                    desc:"Text to show when key is turned OFF",
                     make_widget:CreateTextSettingWidgetCreator(key.setting + '-off-label'),
                     resetter:CreateTextSettingWidgetResetter(key.setting + '-off-label'),
                     set_width:true,
                 },
                 {
-                    label:"Icon turning ON",
-                    desc:"Icon name/file to show on OSD when key is locked",
+                    label:"Lock icon",
+                    desc:"Icon name/Image file to show when key turned ON",
                     make_widget:CreateIconSettingWidgetCreator(key.setting + '-on-icon'),
                     resetter:CreateIconSettingWidgetResetter(key.setting + '-on-icon'),
                     set_width:true,
                 },
                 {
-                    label:"Icon turning OFF",
-                    desc:"Icon name/file to show on OSD when key is unlocked",
+                    label:"Unlock icon",
+                    desc:"Icon name/Image file to show when key turned OFF",
                     make_widget:CreateIconSettingWidgetCreator(key.setting + '-off-icon'),
                     resetter:CreateIconSettingWidgetResetter(key.setting + '-off-icon'),
                     set_width:true,
                 },
                 {
-                    label:"Keep on-screen",
-                    desc:"Keeps the OSD visible when key is locked",
+                    label:"Keep",
+                    desc:"Keeps OSD visible when locked",
                     make_widget:function() {
+                        /*
                         let KeepSwitch = new Gtk.Switch();
                         
                         KeepSwitch.state = setting.get_boolean(key.setting + '-keep');
@@ -241,7 +253,11 @@ const NewPrefsWidget = new GObject.Class({
                         KeepSwitch.connect("state-set", function(KeepSwitch, state) {
                             setting.set_boolean(key.setting + '-keep', state);
                         });
-                        return KeepSwitch;
+                        return KeepSwitch;*/
+                        
+                        let Off = new Gtk.ToggleButton();
+                        let On = new Gtk.ToggleButton();
+                        let Invert = new Gtk.ToggleButton();
                     },
                     resetter:function(KeepSwitch) {
                         
@@ -260,73 +276,73 @@ const NewPrefsWidget = new GObject.Class({
             stack.add_titled(outBox, key.setting, key.label);
             
             //this.set_tab_label_text(outBox, key.label);4
+            
+            let frame = new Gtk.Frame();
+            outBox.pack_start(frame, true, false, 10);
+            frame.set_label(null);
+            
+            let listBox = new Gtk.ListBox();
+            frame.add(listBox);
+            listBox.selection_mode = Gtk.SelectionMode.GTK_SELECTION_NONE;
+            listBox.avtivatable = true;
+            
+            for(let r = 0; r < rows.length; r++) {
+                let row = rows[r];
                 
-                let frame = new Gtk.Frame();
-                outBox.pack_start(frame, true, false, 10);
-                frame.set_label(null);
-                    
-                    let listBox = new Gtk.ListBox();
-                    frame.add(listBox);
-                    listBox.selection_mode = Gtk.SelectionMode.GTK_SELECTION_NONE;
-                    listBox.avtivatable = true;
-                        
-                        for(let r = 0; r < rows.length; r++) {
-                            let row = rows[r];
-                            
-                            let TextRow = new Gtk.Box({orientation: Gtk.Orientation.HORIZONTAL, margin:0});
-                            listBox.add(TextRow);
-                            TextRow.borderWidth = 16;
-                            TextRow.spacing = 16;
-                            
-                                let LabelBox = new Gtk.Box({orientation: Gtk.Orientation.VERTICAL});
-                                TextRow.pack_start(LabelBox, false, false, 0);
-                                LabelBox.halign = Gtk.Align.START;
-                                
-                                    let TextLabel= new Gtk.Label();
-                                    TextLabel.label = row.label;
-                                    LabelBox.pack_start(TextLabel, false, false, 0);
-                                    TextLabel.halign = Gtk.Align.START;
-                                        
-                                    if(row.desc != null) {
-                                        let TextDesc = new Gtk.Label();
-                                        TextDesc.label = row.desc;
-                                        LabelBox.pack_start(TextDesc, false, false, 0);
-                                        TextDesc.get_style_context().add_class("dim-label")
-                                        TextDesc.halign = Gtk.Align.START;
-                                    }
-                                
-                                let ResetButton = new Gtk.Button();
-                                TextRow.pack_end(ResetButton, false, false, 0);
-                                ResetButton.label = "Reset"
-                                ResetButton.valign = Gtk.Align.CENTER;
-                                
-                                let TextWidget = row.make_widget();
-                                TextRow.pack_end(TextWidget, false, false, 0);
-                                TextWidget.halign = Gtk.Align.CENTER;
-                                if(row.set_width)
-                                    TextWidget.width_request = Row_Widget_Width_Request;
-                                
-                                let ResetFunc = function() {
-                                    row.resetter(TextWidget);
-                                };
-                                
-                                if(row.resetter != null) {
-                                    ResetButton.connect('clicked', ResetFunc);
-                                    ResetList.push(ResetFunc);
-                                    AllResetFuncs.push(ResetFunc);
-                                } else
-                                    ResetButton.sensitive = false;
-                        }
+                let TextRow = new Gtk.Box({orientation: Gtk.Orientation.HORIZONTAL, margin:0});
+                listBox.add(TextRow);
+                TextRow.borderWidth = 16;
+                TextRow.spacing = 16;
                 
-                let ResetAll = new Gtk.Button();
-                outBox.pack_start(ResetAll, false, false, 0);
-                ResetAll.label = "Reset All";
-                ResetAll.get_style_context().add_class("destructive-action");
-                ResetAll.connect('clicked', function() {
-                    for(let r = 0; r < ResetList.length; r++)
-                        ResetList[r]();
-                });
-                ResetAll.halign = Gtk.Align.END;
+                let LabelBox = new Gtk.Box({orientation: Gtk.Orientation.VERTICAL});
+                TextRow.pack_start(LabelBox, false, false, 0);
+                LabelBox.halign = Gtk.Align.START;
+                
+                let TextLabel= new Gtk.Label();
+                TextLabel.label = row.label;
+                LabelBox.pack_start(TextLabel, false, false, 0);
+                TextLabel.halign = Gtk.Align.START;
+                
+                if(row.desc != null) {
+                    let TextDesc = new Gtk.Label();
+                    TextDesc.label = row.desc;
+                    LabelBox.pack_start(TextDesc, false, false, 0);
+                    TextDesc.get_style_context().add_class("dim-label")
+                    TextDesc.halign = Gtk.Align.START;
+                }
+                
+                let ResetButton = new Gtk.Button();
+                TextRow.pack_end(ResetButton, false, false, 0);
+                ResetButton.label = "Reset"
+                ResetButton.valign = Gtk.Align.CENTER;
+                
+                let TextWidget = row.make_widget();
+                TextRow.pack_end(TextWidget, false, false, 0);
+                TextWidget.halign = Gtk.Align.CENTER;
+                if(row.set_width)
+                    TextWidget.width_request = Row_Widget_Width_Request;
+                
+                let ResetFunc = function() {
+                    row.resetter(TextWidget);
+                };
+                
+                if(row.resetter != null) {
+                    ResetButton.connect('clicked', ResetFunc);
+                    ResetList.push(ResetFunc);
+                    AllResetFuncs.push(ResetFunc);
+                } else
+                    ResetButton.sensitive = false;
+            }
+            
+            let ResetAll = new Gtk.Button();
+            outBox.pack_start(ResetAll, false, false, 0);
+            ResetAll.label = "Reset All";
+            ResetAll.get_style_context().add_class("destructive-action");
+            ResetAll.connect('clicked', function() {
+                for(let r = 0; r < ResetList.length; r++)
+                    ResetList[r]();
+            });
+            ResetAll.halign = Gtk.Align.END;
         }
         
         let ResetAll = new Gtk.Button();
