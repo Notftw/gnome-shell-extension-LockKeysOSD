@@ -211,8 +211,6 @@ const NewPrefsWidget = new GObject.Class({
             
             let rows = [
                 {
-                    label:"
-                {
                     label:"Lock text",
                     desc:"Text to show when key is turned ON",
                     make_widget:CreateTextSettingWidgetCreator(key.setting + '-on-label'),
@@ -244,7 +242,6 @@ const NewPrefsWidget = new GObject.Class({
                     label:"Keep",
                     desc:"Keeps OSD visible when locked",
                     make_widget:function() {
-                        /*
                         let KeepSwitch = new Gtk.Switch();
                         
                         KeepSwitch.state = setting.get_boolean(key.setting + '-keep');
@@ -253,11 +250,7 @@ const NewPrefsWidget = new GObject.Class({
                         KeepSwitch.connect("state-set", function(KeepSwitch, state) {
                             setting.set_boolean(key.setting + '-keep', state);
                         });
-                        return KeepSwitch;*/
-                        
-                        let Off = new Gtk.ToggleButton();
-                        let On = new Gtk.ToggleButton();
-                        let Invert = new Gtk.ToggleButton();
+                        return KeepSwitch;
                     },
                     resetter:function(KeepSwitch) {
                         
