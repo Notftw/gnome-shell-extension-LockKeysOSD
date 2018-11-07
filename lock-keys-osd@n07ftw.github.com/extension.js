@@ -32,9 +32,31 @@ const Gdk = imports.gi.Gdk;
 const Keymap = Gdk.Keymap.get_default();
 
 let capStatus, numStatus, scrollStatus, _KeyStatusId;
+
+let old_show = null, old_hide = null;
+
+/**
+ * Replacement OsdWindow.show()
+ * Has to be run for all osdWindows
+ * Before they run the show() command
+ * To cancel the show's timeout after it it called
+**/
+function add_canceller(osdWindow) {
+    if(old_show == null) old_show = osdWindow.show;
     
-//Equivalent to old _popupStyle or _grayoutStyle
-//But since there's no style, name is changed.
+    osdWindow.show = function lock_keys_osd_show() {
+        old_show.apply(osdWindow, arguments);
+        Mainloop.source_remove(osdWindow._hideTimeoutId);
+    }
+}
+
+//Revert the specific osdWindow to non-injected
+function revert_show(osdWindows) {
+    if(old_show != null)
+    osdWindows.forEach(osdWindow => osdWindow.show = old_show);
+    old_show = null;
+}
+
 function update() {
     let newCapStatus = Keymap.get_caps_lock_state();
     let newNumStatus = Keymap.get_num_lock_state();
@@ -47,6 +69,24 @@ function update() {
     capStatus = newCapStatus;
     numStatus = newNumStatus;
     scrollStatus = newScrollStatus;
+}
+
+/**
+ * Applies injectinos for osd windows, before they are to be shown
+ * So that all future show() calls have their hide timeouts cancelled
+**/
+function set_stay_pre() {
+    Main.osdWindowManager._osdWindows.forEach(osdWindow => {
+        add_canceller(osdWindow)
+    });
+}
+
+/**
+ * Applies injections for osd windows, after they are to be shown
+ * So that all future show() calls revert the osdWindows to normal
+ */
+function set_stay_post() {
+    revert_show(Main.osdWindowManager._osdWindows);
 }
 
 /*
@@ -62,8 +102,12 @@ function updateKey(keyname, oldStatus, newStatus) {
         let ico = Gio.Icon.new_for_string(setting.get_string(keyname+'-'+setting_mode+'-icon'));
         let label = setting.get_string(keyname+'-'+setting_mode+'-label');
         
-        let stayVal = newStatus && setting.get_boolean(keyname+'-keep'); //TODO: use stayVal
+        let stayVal = newStatus && setting.get_boolean(keyname+'-keep');
+        
+        if(stayVal) set_stay_pre(); //Prevent hide timeout
+        
         Main.osdWindowManager.show(-1, ico, label, null, 0);
+        if(stayVal) set_stay_post(-1, ico, label, null, 0); //Revert after temporary osd (_hide), uninject show()
         
     } else return false;
 }
@@ -93,4 +137,5 @@ function enable(){
 
 function disable(){
     Keymap.disconnect(_KeyStatusId);
+    revert_show(Main.osdWindowManager._osdWindows);
 }
